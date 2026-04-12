@@ -1,0 +1,35 @@
+/**
+ * Synonyms Dataset - 30 words with accepted synonyms
+ */
+export const synonyms = [
+  { word: "ראה", accepted: ["הסתכל", "הביט", "התבונן"] },
+  { word: "מקשיב", accepted: ["מאזין"] },
+  { word: "מסדרון", accepted: ["פרוזדור"] },
+  { word: "שמש", accepted: ["חמה", "גלגל חמה"] },
+  { word: "ריב", accepted: ["קטטה", "מריבה"] },
+  { word: "חג", accepted: ["מועד", "יום טוב"] },
+  { word: "סהר", accepted: ["ירח", "לבנה"] },
+  { word: "אריה", accepted: ["לביא", "ליש"] },
+  { word: "ליצן", accepted: ["מוקיון"] },
+  { word: "בננה", accepted: ["מוז"] },
+  { word: "אף", accepted: ["חוטם"] },
+  { word: "מצחיק", accepted: ["מבדר"] },
+  { word: "להחביא", accepted: ["להסתיר", "להצפין"] },
+  { word: "גבוה", accepted: ["רם", "תמיר"] },
+  { word: "פחדן", accepted: ["מוג לב"] },
+  { word: "עץ", accepted: ["אילן"] },
+  { word: "זרק", accepted: ["השליך"] },
+  { word: "שרפה", accepted: ["דליקה"] },
+  { word: "חופש", accepted: ["דרור"] },
+  { word: "הבריא", accepted: ["החלים"] },
+  { word: "חיכה", accepted: ["המתין"] },
+  { word: "שתה", accepted: ["לגם"] },
+  { word: "מרגיש", accepted: ["חש"] },
+  { word: "זז", accepted: ["נע"] },
+  { word: "קרוב", accepted: ["סמוך"] },
+  { word: "גשם", accepted: ["מטר"] },
+  { word: "שטיח", accepted: ["מרבד"] },
+  { word: "סוד", accepted: ["רז"] },
+  { word: "מתנה", accepted: ["שי", "דורון", "תשורה"] },
+  { word: "חבר", accepted: ["עמית", "רע", "ידיד"] }
+];

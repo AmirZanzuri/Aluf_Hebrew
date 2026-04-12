@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>משחק מילים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface2: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --gold: #f5a623;
+    --green: #00c896;
+    --red: #ff4757;
+    --text: #eaeaea;
+    --text-muted: #8888aa;
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+    overflow-x: hidden;
+  }
+
+  /* ─── Background decoration ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(233,69,96,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; left: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(15,52,96,0.3) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 20px; }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; animation: fadeIn 0.35s ease; }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── HOME ─── */
+  .home-header { text-align: center; padding: 40px 0 30px; }
+  .home-header .logo { font-size: 56px; margin-bottom: 8px; }
+  .home-header h1 {
+    font-size: 2.8rem; font-weight: 900;
+    background: linear-gradient(135deg, #e94560, #f5a623);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .home-header p { color: var(--text-muted); margin-top: 8px; font-size: 1rem; }
+
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 30px 0; }
+
+  .mode-card {
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(233,69,96,0.1), transparent);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .mode-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(233,69,96,0.2); }
+  .mode-card:hover::before { opacity: 1; }
+  .mode-card .icon { font-size: 2.4rem; margin-bottom: 10px; }
+  .mode-card h3 { font-size: 1.1rem; font-weight: 700; }
+  .mode-card p { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* ─── SCORE BOARD on home ─── */
+  .scoreboard {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 10px;
+  }
+  .scoreboard h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; color: var(--gold); }
+  .score-rows { display: flex; flex-direction: column; gap: 10px; }
+  .score-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border-radius: 10px; padding: 12px 16px;
+  }
+  .score-row .label { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .score-row .icon-sm { font-size: 1.4rem; }
+  .score-row .best { color: var(--gold); font-weight: 900; font-size: 1.1rem; }
+  .score-row .plays { color: var(--text-muted); font-size: 0.8rem; }
+
+  /* ─── GAME SCREEN ─── */
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0; margin-bottom: 16px;
+  }
+  .game-header .back-btn {
+    background: var(--surface); border: none; color: var(--text);
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    font-family: 'Heebo', sans-serif; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 6px; transition: background 0.2s;
+  }
+  .game-header .back-btn:hover { background: var(--accent2); }
+  .game-header .mode-badge {
+    background: var(--accent); color: white;
+    padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;
+  }
+  .game-header .score-live {
+    font-size: 1rem; font-weight: 700; color: var(--gold);
+  }
+
+  /* Progress bar */
+  .progress-bar-wrap { height: 6px; background: var(--surface); border-radius: 3px; margin-bottom: 20px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 3px; transition: width 0.4s ease; }
+
+  /* Question card */
+  .q-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 28px; margin-bottom: 16px; box-shadow: var(--shadow);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .q-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .q-text { font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; line-height: 1.4; }
+  .q-counter { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+
+  /* Input */
+  .input-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .input-row input {
+    flex: 1; padding: 12px 16px; border-radius: 10px;
+    background: var(--surface2); border: 2px solid rgba(255,255,255,0.08);
+    color: var(--text); font-family: 'Heebo', sans-serif; font-size: 1rem;
+    outline: none; transition: border-color 0.2s;
+    direction: rtl;
+  }
+  .input-row input:focus { border-color: var(--accent); }
+
+  /* Choices */
+  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .choice-btn {
+    width: 100%; padding: 14px 18px; border-radius: 10px;
+    background: var(--surface2); border: 2px solid rgba(255,255,255,0.06);
+    color: var(--text); font-family: 'Heebo', sans-serif; font-size: 1rem;
+    cursor: pointer; text-align: right; transition: all 0.2s;
+  }
+  .choice-btn:hover { border-color: var(--accent); background: rgba(233,69,96,0.1); }
+  .choice-btn.selected { border-color: #f5a623; background: rgba(245,166,35,0.12); }
+  .choice-btn.correct { border-color: var(--green); background: rgba(0,200,150,0.15); }
+  .choice-btn.wrong { border-color: var(--red); background: rgba(255,71,87,0.15); }
+
+  /* Action buttons */
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 12px 22px; border-radius: 10px; border: none;
+    font-family: 'Heebo', sans-serif; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: white; flex: 1; }
+  .btn-primary:hover { background: #c73652; }
+  .btn-secondary { background: var(--surface2); color: var(--text); }
+  .btn-secondary:hover { background: var(--accent2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Feedback */
+  .feedback {
+    padding: 12px 16px; border-radius: 10px; margin-top: 14px;
+    font-weight: 600; font-size: 1rem; display: none;
+  }
+  .feedback.correct { background: rgba(0,200,150,0.15); color: var(--green); border: 1px solid var(--green); display: block; }
+  .feedback.wrong   { background: rgba(255,71,87,0.15);  color: var(--red);   border: 1px solid var(--red);   display: block; }
+
+  /* ─── MISTAKES PANEL ─── */
+  .mistakes-panel {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 20px; margin-top: 16px;
+    border: 1px solid rgba(255,71,87,0.2);
+  }
+  .mistakes-panel h3 { color: var(--red); font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .mistake-item {
+    background: var(--surface2); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem;
+  }
+  .mistake-item .m-q { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 3px; }
+  .mistake-item .m-yours { color: var(--red); }
+  .mistake-item .m-correct { color: var(--green); }
+
+  /* ─── END SCREEN ─── */
+  .end-screen { text-align: center; padding: 40px 20px; }
+  .end-screen .result-icon { font-size: 5rem; margin-bottom: 16px; }
+  .end-screen h2 { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+  .end-screen .final-score {
+    font-size: 4rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin: 16px 0;
+  }
+  .end-screen .sub { color: var(--text-muted); margin-bottom: 30px; }
+  .end-screen .actions { justify-content: center; }
+
+  .stat-row { display: flex; gap: 16px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+  .stat-box {
+    background: var(--surface); border-radius: 12px; padding: 16px 24px; min-width: 100px;
+  }
+  .stat-box .val { font-size: 2rem; font-weight: 900; }
+  .stat-box .lbl { font-size: 0.75rem; color: var(--text-muted); }
+  .stat-box.green .val { color: var(--green); }
+  .stat-box.red   .val { color: var(--red); }
+  .stat-box.gold  .val { color: var(--gold); }
+
+  /* ─── Empty state ─── */
+  .empty { color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px; }
+
+  @media (max-width: 480px) {
+    .mode-grid { grid-template-columns: 1fr; }
+    .home-header h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ════════════════ HOME ════════════════ -->
+  <div id="screen-home" class="screen active">
+    <div class="home-header">
+      <div class="logo">📚</div>
+      <h1>משחק מילים</h1>
+      <p>בחר קטגוריה כדי להתחיל</p>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card" onclick="App.startGame('opposites')">
+        <div class="icon">🔄</div>
+        <h3>הפכים</h3>
+        <p>מצא את ההפך</p>
+      </div>
+      <div class="mode-card" onclick="App.startGame('synonyms')">
+        <div class="icon">💬</div>
+        <h3>נרדפות</h3>
+        <p>מילה בעלת משמעות דומה</p>
+      </div>
+      <div class="mode-card" onclick="App.startGame('meanings')">
+        <div class="icon">🔍</div>
+        <h3>פירושים</h3>
+        <p>התאם פירוש למשפט</p>
+      </div>
+    </div>
+
+    <div class="scoreboard">
+      <h2>🏆 שיאים אישיים</h2>
+      <div class="score-rows" id="home-scores"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════ GAME ════════════════ -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <button class="back-btn" onclick="App.goHome()">← חזרה</button>
+      <span class="mode-badge" id="g-mode-label"></span>
+      <span class="score-live" id="g-score-live">ניקוד: 0</span>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="g-progress"></div>
+    </div>
+
+    <div class="q-card">
+      <div class="q-label" id="g-label"></div>
+      <div class="q-counter" id="g-counter"></div>
+      <div class="q-text" id="g-question"></div>
+
+      <div class="input-row" id="g-input-wrap">
+        <input type="text" id="g-input" placeholder="הקלד תשובה..." onkeydown="if(event.key==='Enter') App.checkAnswer()">
+      </div>
+
+      <div class="choices" id="g-choices"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="g-check-btn" onclick="App.checkAnswer()">✓ בדוק</button>
+        <button class="btn btn-secondary" onclick="App.next()">דלג ←</button>
+      </div>
+
+      <div class="feedback" id="g-feedback"></div>
+    </div>
+
+    <!-- Mistakes so far -->
+    <div class="mistakes-panel" id="g-mistakes-panel">
+      <h3>❌ טעויות במשחק הנוכחי</h3>
+      <div id="g-mistakes-list"><div class="empty">אין טעויות עדיין 🎉</div></div>
+    </div>
+  </div>
+
+  <!-- ════════════════ END ════════════════ -->
+  <div id="screen-end" class="screen">
+    <div class="end-screen">
+      <div class="result-icon" id="e-icon"></div>
+      <h2 id="e-title"></h2>
+      <div class="final-score" id="e-score"></div>
+      <div class="sub" id="e-sub"></div>
+
+      <div class="stat-row">
+        <div class="stat-box green"><div class="val" id="e-correct"></div><div class="lbl">נכון</div></div>
+        <div class="stat-box red"><div class="val" id="e-wrong"></div><div class="lbl">שגוי</div></div>
+        <div class="stat-box gold"><div class="val" id="e-skipped"></div><div class="lbl">דילוגים</div></div>
+      </div>
+
+      <!-- All mistakes from this session -->
+      <div class="mistakes-panel" id="e-mistakes-panel" style="text-align:right; margin-top:20px;">
+        <h3>📋 סיכום טעויות</h3>
+        <div id="e-mistakes-list"></div>
+      </div>
+
+      <div class="actions" style="margin-top:24px;">
+        <button class="btn btn-primary" onclick="App.startGame(App.state.mode)">🔄 שחק שוב</button>
+        <button class="btn btn-secondary" onclick="App.goHome()">🏠 בית</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ══════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════
+const DATA = {
+
+  // ── 25 הפכים ──
+opposites: [
+["פורח","נובל"],
+["איטי","מהיר"],
+["רחב","צר"],
+["בהיר","כהה"],
+["רעב","שבע"],
+["כפוף","זקוף"],
+["חלק","מחוספס"],
+["חרוץ","עצלן"],
+["דולק","כבוי"],
+["לזכור","לשכוח"],
+["מגלה","מסתיר"],
+["עצבני","רגוע"],
+["לשקוע","לצוף"],
+["למשוך","לדחוף"],
+["קבוע","זמני"],
+["נכון","שגוי"],
+["פשוט","מסובך"],
+["מתוח","רפוי"],
+["דמיוני","מציאותי"],
+["מתלהב","אדיש"],
+["לבש","פשט"],
+["ברכה","קללה"],
+["נדיב","קמצן"],
+["זהיר","פזיז"],
+["חד","קהה"]
+],
+
+  // ── 30 מילים נרדפות ──
+  synonyms: [
+{ word:"ראה", accepted:["הסתכל","הביט","התבונן"] },
+{ word:"מקשיב", accepted:["מאזין"] },
+{ word:"מסדרון", accepted:["פרוזדור"] },
+{ word:"שמש", accepted:["חמה","גלגל חמה"] },
+{ word:"ריב", accepted:["קטטה","מריבה"] },
+{ word:"חג", accepted:["מועד","יום טוב"] },
+{ word:"סהר", accepted:["ירח","לבנה"] },
+{ word:"אריה", accepted:["לביא","ליש"] },
+{ word:"ליצן", accepted:["מוקיון"] },
+{ word:"בננה", accepted:["מוז"] },
+{ word:"אף", accepted:["חוטם"] },
+{ word:"מצחיק", accepted:["מבדר"] },
+{ word:"להחביא", accepted:["להסתיר","להצפין"] },
+{ word:"גבוה", accepted:["רם","תמיר"] },
+{ word:"פחדן", accepted:["מוג לב"] },
+{ word:"עץ", accepted:["אילן"] },
+{ word:"זרק", accepted:["השליך"] },
+{ word:"שרפה", accepted:["דליקה"] },
+{ word:"חופש", accepted:["דרור"] },
+{ word:"הבריא", accepted:["החלים"] },
+{ word:"חיכה", accepted:["המתין"] },
+{ word:"שתה", accepted:["לגם"] },
+{ word:"מרגיש", accepted:["חש"] },
+{ word:"זז", accepted:["נע"] },
+{ word:"קרוב", accepted:["סמוך"] },
+{ word:"גשם", accepted:["מטר"] },
+{ word:"שטיח", accepted:["מרבד"] },
+{ word:"סוד", accepted:["רז"] },
+{ word:"מתנה", accepted:["שי","דורון","תשורה"] },
+{ word:"חבר", accepted:["עמית","רע","ידיד"] }
+],
+
+  // ── 30 פירושים ──
+ meanings: [
+
+{ word:"מטריה", meaning:"מכשיר המורכב ממוט או ידית ויריעת בד או פלסטיק להגנה מפני הגשם", sentence:"קניתי מטריה גדולה ורחבה כדי שתגן עלי מפני הגשם בעונת החורף" },
+
+{ word:"שעון", meaning:"מכשיר מדידה המשמש למדידת זמן ולהצגתו", sentence:"ביום הולדתי קיבלתי שעון במתנה" },
+
+{ word:"עננים", meaning:"גושי אדי מים המצויים באוויר", sentence:"אתמול הופיעו עננים גדולים ואפורים" },
+
+{ word:"שלכת", meaning:"תופעת טבע של נשירת עלי העצים והשיחים בדרך כלל בעונת הסתיו", sentence:"בשלכת נושרים עלים רבים מהעצים בחצר" },
+
+{ word:"עוגיה", meaning:"מאפה קטן", sentence:"אכלתי בבוקר עוגיה עם מילוי שוקולד" },
+
+{ word:"עפיפון", meaning:"חפץ שעף באוויר עם כיוון הרוח וקשור לחוט", sentence:"העפיפון שלי עף גבוה בשמים ברוח חזקה" },
+
+{ word:"עזרה", meaning:"סיוע הפניית כוחות ומשאבים להיכן שנדרש", sentence:"קיבלתי עזרה מחברתי בשיעורי הבית" },
+
+{ word:"ברח", meaning:"הסתלק במהירות נמלט", sentence:"הגנב ברח מהדירה לאחר ששמע את האזעקה" },
+
+{ word:"שאלה", meaning:"משפט המנוסח כדי לקבל תשובה", sentence:"התלמיד שאל את המורה שאלה בחשבון" },
+
+{ word:"פלסטלינה", meaning:"חומר גמיש המשמש למשחק ולפיסול", sentence:"אני אוהבת לשחק בפלסטלינה וליצור צורות" },
+
+{ word:"ראשון", meaning:"היום שפותח את השבוע לאחר שבת או דבר שקודם לאחרים", sentence:"ביום ראשון אחגוג את יום הולדתי" },
+
+{ word:"תחרות", meaning:"אירוע שבו משתתפים כדי לנצח", sentence:"אתמול התקיימה תחרות ריצה בבית הספר" },
+
+{ word:"ערוגה", meaning:"שטח אדמה שבו שותלים או זורעים צמחים", sentence:"זרענו בערוגה בגינה זרעי תבלין" },
+
+{ word:"מרשתת", meaning:"אינטרנט", sentence:"אמי מרשה לי לשחק במרשתת חצי שעה ביום" },
+
+{ word:"משאית", meaning:"רכב גדול להובלת משא", sentence:"המשאית הגדולה התקלקלה ולא יכלה לנסוע" },
+
+{ word:"טעות", meaning:"פעולה או תוצאה לא נכונה", sentence:"עשיתי טעות בתרגיל" },
+
+{ word:"שבוע", meaning:"פרק זמן של שבעה ימים", sentence:"בסוף השבוע ניסע לטיול" },
+
+{ word:"טנא", meaning:"סל קלוע מענפים לשמירת פירות", sentence:"בשבועות מכינים טנא עם פירות" },
+
+{ word:"אהבה", meaning:"רגש של חיבה חזקה", sentence:"האהבה שלי לסבא וסבתא גדולה מאוד" },
+
+{ word:"כיסא", meaning:"רהיט לישיבה לאדם אחד", sentence:"הכיסא בכיתה נוח מאוד" },
+
+{ word:"לפעמים", meaning:"מדי פעם לעיתים", sentence:"לפעמים מתחשק לי ללכת לים" },
+
+{ word:"מצטער", meaning:"הביע חרטה", sentence:"אמרתי לאמא שאני מצטער" },
+
+{ word:"שכח", meaning:"לא זכר", sentence:"עורך הדין שכח את הפגישה" },
+
+{ word:"הפתעה", meaning:"דבר בלתי צפוי", sentence:"זו הפתעה אני לא מגלה" },
+
+{ word:"הפסקה", meaning:"פרק זמן של מנוחה באמצע פעילות", sentence:"נסענו בלי הפסקה לאילת" },
+
+{ word:"טבח", meaning:"אדם שמקצועו לבשל", sentence:"הטבח במלון מבשל אוכל טעים" },
+
+{ word:"סליחה", meaning:"מילת התנצלות", sentence:"סליחה לא התכוונתי" },
+
+{ word:"שיחה", meaning:"דיבור בין אנשים", sentence:"השיחה בין החברים ארכה זמן רב" },
+
+{ word:"חכמה", meaning:"יכולת שכלית מפותחת וידע", sentence:"אחותי ילדה חכמה מאוד" },
+
+{ word:"ארוחה", meaning:"זמן המוקדש לאכילה", sentence:"אבא מכין לנו ארוחה טעימה" }
+
+]
+};
+
+// ══════════════════════════════════════════
+//  DB — localStorage
+// ══════════════════════════════════════════
+const DB = {
+  KEY: 'word_game_v2',
+
+  load() {
+    try {
+      return JSON.parse(localStorage.getItem(this.KEY)) || this._fresh();
+    } catch { return this._fresh(); }
+  },
+
+  save(data) {
+    localStorage.setItem(this.KEY, JSON.stringify(data));
+  },
+
+  _fresh() {
+    return {
+      scores: {
+        opposites: { best: 0, plays: 0 },
+        synonyms:  { best: 0, plays: 0 },
+        meanings:  { best: 0, plays: 0 }
+      },
+      history: []   // last 50 mistake records
+    };
+  },
+
+  recordGame(mode, pct, mistakes) {
+    const db = this.load();
+    const s = db.scores[mode];
+    s.plays++;
+    if (pct > s.best) s.best = pct;
+
+    // store mistakes with timestamp
+    if (mistakes.length) {
+      db.history.unshift({ mode, date: new Date().toLocaleDateString('he-IL'), mistakes });
+      if (db.history.length > 50) db.history = db.history.slice(0, 50);
+    }
+    this.save(db);
+  }
+};
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+}
+
+function el(id) { return document.getElementById(id); }
+
+// ══════════════════════════════════════════
+//  APP
+// ══════════════════════════════════════════
+const App = (() => {
+
+  // ── State ──
+  const state = {
+    mode: null,
+    questions: [],
+    index: 0,
+    correct: 0,
+    wrong: 0,
+    skipped: 0,
+    answered: false,
+    selectedChoice: null,
+    mistakes: []        // { question, yourAnswer, correctAnswer }
+  };
+
+  // ── Mode meta ──
+  const META = {
+    opposites: { label:'הפכים', icon:'🔄', inputLabel:'כתוב את ההפך:' },
+    synonyms:  { label:'מילים נרדפות', icon:'💬', inputLabel:'כתוב מילה נרדפת:' },
+    meanings:  { label:'פירושים', icon:'🔍', inputLabel:'בחר את המשפט המתאים:' }
+  };
+
+  // ── Start ──
+  function startGame(mode) {
+    state.mode      = mode;
+    state.index     = 0;
+    state.correct   = 0;
+    state.wrong     = 0;
+    state.skipped   = 0;
+    state.answered  = false;
+    state.selectedChoice = null;
+    state.mistakes  = [];
+
+    const raw = DATA[mode];
+    state.questions = shuffle(raw);
+
+    el('g-mode-label').textContent = META[mode].icon + ' ' + META[mode].label;
+    showScreen('game');
+    renderQuestion();
+  }
+
+  // ── Render question ──
+  function renderQuestion() {
+    const q = state.questions[state.index];
+    const mode = state.mode;
+    const meta = META[mode];
+    const total = state.questions.length;
+
+    // Reset UI
+    state.answered = false;
+    state.selectedChoice = null;
+    el('g-feedback').className = 'feedback';
+    el('g-feedback').textContent = '';
+    el('g-choices').innerHTML = '';
+    el('g-input').value = '';
+    el('g-check-btn').disabled = false;
+
+    // Progress
+    const pct = (state.index / total) * 100;
+    el('g-progress').style.width = pct + '%';
+    el('g-counter').textContent = `שאלה ${state.index + 1} מתוך ${total}`;
+    el('g-score-live').textContent = `ניקוד: ${state.correct}`;
+    el('g-label').textContent = meta.inputLabel;
+
+    // Mode-specific
+    if (mode === 'opposites') {
+      el('g-question').textContent = q[0];
+      el('g-input-wrap').style.display = 'flex';
+    }
+
+    if (mode === 'synonyms') {
+      el('g-question').textContent = q.word;
+      el('g-input-wrap').style.display = 'flex';
+    }
+
+    // if (mode === 'meanings') {
+    //   el('g-question').textContent = q.meaning;
+    //   el('g-input-wrap').style.display = 'none';
+
+    //   // Build 4 choices
+
+    if (mode === 'meanings') {
+
+  el('g-label').textContent = 'בחר את המשפט הנכון והשלם את המילה:';
+
+  el('g-question').textContent = q.meaning;
+
+  el('g-input-wrap').style.display = 'flex';
+
+  // בונים 4 משפטים עם חור
+  const correctSentence = q.sentence.replace(q.word, '_____');
+
+  let pool = DATA.meanings
+    .filter(m => m.word !== q.word)
+    .map(m => m.sentence.replace(m.word, '_____'));
+
+  pool = shuffle(pool).slice(0, 3);
+
+  const options = shuffle([correctSentence, ...pool]);
+
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.textContent = opt;
+
+    btn.onclick = () => {
+      if (state.answered) return;
+      state.selectedChoice = opt;
+
+      document.querySelectorAll('.choice-btn')
+        .forEach(b => b.classList.remove('selected'));
+
+      btn.classList.add('selected');
+    };
+
+    el('g-choices').appendChild(btn);
+  });
+}
+    //   const correct = q.sentence;
+    //   let pool = DATA.meanings.map(m => m.sentence).filter(s => s !== correct);
+    //   pool = shuffle(pool).slice(0, 3);
+    //   const options = shuffle([correct, ...pool]);
+
+    //   options.forEach(opt => {
+    //     const btn = document.createElement('button');
+    //     btn.className = 'choice-btn';
+    //     btn.textContent = opt;
+    //     btn.onclick = () => {
+    //       if (state.answered) return;
+    //       state.selectedChoice = opt;
+    //       document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+    //       btn.classList.add('selected');
+    //     };
+    //     el('g-choices').appendChild(btn);
+    //   });
+    // }
+
+    renderMistakes();
+  }
+
+  // ── Check ──
+  function checkAnswer() {
+    if (state.answered) return;
+
+    const q = state.questions[state.index];
+    const mode = state.mode;
+    let isCorrect = false;
+    let yourAnswer = '';
+    let correctAnswer = '';
+
+    if (mode === 'opposites') {
+      yourAnswer = el('g-input').value.trim();
+      correctAnswer = q[1];
+      isCorrect = yourAnswer === correctAnswer;
+    }
+
+    if (mode === 'synonyms') {
+      yourAnswer = el('g-input').value.trim();
+      correctAnswer = q.accepted.join(' / ');
+      isCorrect = q.accepted.includes(yourAnswer);
+    }
+if (mode === 'meanings') {
+
+  yourAnswer = el('g-input').value.trim();
+  const selectedSentence = state.selectedChoice;
+
+  if (!selectedSentence) {
+    showFeedback('בחר משפט!', false, true);
+    return;
+  }
+
+  if (!yourAnswer) {
+    showFeedback('הקלד מילה!', false, true);
+    return;
+  }
+
+  const correctSentence = q.sentence.replace(q.word, '_____');
+  correctAnswer = q.word;
+
+  const sentenceCorrect = selectedSentence === correctSentence;
+  const wordCorrect = yourAnswer === q.word;
+
+  isCorrect = sentenceCorrect && wordCorrect;
+
+  // צביעה
+  document.querySelectorAll('.choice-btn').forEach(btn => {
+    if (btn.textContent === correctSentence) btn.classList.add('correct');
+    else if (btn.textContent === selectedSentence && !sentenceCorrect)
+      btn.classList.add('wrong');
+  });
+}
+
+    // if (mode === 'meanings') {
+    //   yourAnswer = state.selectedChoice || '';
+    //   correctAnswer = q.sentence;
+    //   if (!yourAnswer) {
+    //     showFeedback('אנא בחר תשובה!', false, true);
+    //     return;
+    //   }
+    //   isCorrect = yourAnswer === correctAnswer;
+
+    //   // Color choices
+    //   document.querySelectorAll('.choice-btn').forEach(btn => {
+    //     if (btn.textContent === correctAnswer) btn.classList.add('correct');
+    //     else if (btn.textContent === yourAnswer && !isCorrect) btn.classList.add('wrong');
+    //   });
+    // }
+
+    state.answered = true;
+    el('g-check-btn').disabled = true;
+
+    if (isCorrect) {
+      state.correct++;
+      showFeedback('✓ כל הכבוד! תשובה נכונה', true);
+    } else {
+      state.wrong++;
+      state.mistakes.push({
+        question: mode === 'opposites' ? q[0] : mode === 'synonyms' ? q.word : q.meaning,
+        yourAnswer: yourAnswer || '(ריק)',
+        correctAnswer
+      });
+      showFeedback(`✗ לא נכון. התשובה הנכונה: ${correctAnswer}`, false);
+      renderMistakes();
+    }
+
+    el('g-score-live').textContent = `ניקוד: ${state.correct}`;
+
+    // Auto-advance after 1.5s
+    setTimeout(() => {
+      state.index++;
+      if (state.index >= state.questions.length) endGame();
+      else renderQuestion();
+    }, 1500);
+  }
+
+  // ── Skip ──
+  function next() {
+    if (state.answered) return;
+    state.skipped++;
+    const q = state.questions[state.index];
+    const mode = state.mode;
+    const correctAnswer = mode === 'opposites' ? q[1]
+                        : mode === 'synonyms'  ? q.accepted.join(' / ')
+                        : q.sentence;
+
+    state.mistakes.push({
+      question: mode === 'opposites' ? q[0] : mode === 'synonyms' ? q.word : q.meaning,
+      yourAnswer: '(דילוג)',
+      correctAnswer
+    });
+    renderMistakes();
+
+    state.index++;
+    if (state.index >= state.questions.length) endGame();
+    else renderQuestion();
+  }
+
+  // ── Feedback ──
+  function showFeedback(msg, ok, neutral = false) {
+    const fb = el('g-feedback');
+    fb.textContent = msg;
+    fb.className = 'feedback ' + (neutral ? '' : ok ? 'correct' : 'wrong');
+  }
+
+  // ── Render in-game mistakes ──
+  function renderMistakes() {
+    const list = el('g-mistakes-list');
+    if (!state.mistakes.length) {
+      list.innerHTML = '<div class="empty">אין טעויות עדיין 🎉</div>';
+      return;
+    }
+    list.innerHTML = state.mistakes.map(m => `
+      <div class="mistake-item">
+        <div class="m-q">שאלה: ${m.question}</div>
+        <div class="m-yours">✗ תשובתך: ${m.yourAnswer}</div>
+        <div class="m-correct">✓ נכון: ${m.correctAnswer}</div>
+      </div>
+    `).join('');
+  }
+
+  // ── End ──
+  function endGame() {
+    const total   = state.questions.length;
+    const pct     = Math.round((state.correct / total) * 100);
+
+    // Save to DB
+    DB.recordGame(state.mode, pct, state.mistakes);
+
+    // Result icon & title
+    let icon, title;
+    if (pct >= 90) { icon = '🏆'; title = 'מדהים! שיא!'; }
+    else if (pct >= 70) { icon = '🌟'; title = 'עבודה טובה!'; }
+    else if (pct >= 50) { icon = '👍'; title = 'לא רע!'; }
+    else { icon = '💪'; title = 'המשך לתרגל!'; }
+
+    el('e-icon').textContent = icon;
+    el('e-title').textContent = title;
+    el('e-score').textContent = pct + '%';
+    el('e-sub').textContent = `${state.correct} נכון מתוך ${total} שאלות`;
+    el('e-correct').textContent = state.correct;
+    el('e-wrong').textContent   = state.wrong;
+    el('e-skipped').textContent = state.skipped;
+
+    // Mistakes summary
+    const eList = el('e-mistakes-list');
+    if (!state.mistakes.length) {
+      eList.innerHTML = '<div class="empty">ללא טעויות! מושלם 🎉</div>';
+    } else {
+      eList.innerHTML = state.mistakes.map(m => `
+        <div class="mistake-item">
+          <div class="m-q">שאלה: ${m.question}</div>
+          <div class="m-yours">✗ תשובתך: ${m.yourAnswer}</div>
+          <div class="m-correct">✓ נכון: ${m.correctAnswer}</div>
+        </div>
+      `).join('');
+    }
+
+    showScreen('end');
+  }
+
+  // ── Home ──
+  function goHome() {
+    renderHomeScores();
+    showScreen('home');
+  }
+
+  function renderHomeScores() {
+    const db = DB.load();
+    const modes = [
+      { key:'opposites', label:'הפכים',    icon:'🔄' },
+      { key:'synonyms',  label:'נרדפות',   icon:'💬' },
+      { key:'meanings',  label:'פירושים',  icon:'🔍' }
+    ];
+    el('home-scores').innerHTML = modes.map(m => {
+      const s = db.scores[m.key];
+      return `
+        <div class="score-row">
+          <div class="label"><span class="icon-sm">${m.icon}</span>${m.label}</div>
+          <div>
+            <span class="best">${s.best}%</span>
+            <span class="plays"> · ${s.plays} משחקים</span>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Init
+  renderHomeScores();
+
+  return { startGame, checkAnswer, next, goHome, state };
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>משחק מילים</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1a1a2e;
+    --surface2: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --gold: #f5a623;
+    --green: #00c896;
+    --red: #ff4757;
+    --text: #eaeaea;
+    --text-muted: #8888aa;
+    --radius: 16px;
+    --shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Heebo', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    direction: rtl;
+    overflow-x: hidden;
+  }
+
+  /* Background decoration */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(233,69,96,0.12) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -200px; left: -200px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(15,52,96,0.3) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 20px; }
+
+  /* SCREENS */
+  .screen { display: none; animation: fadeIn 0.35s ease; }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* HOME */
+  .home-header { text-align: center; padding: 40px 0 30px; }
+  .home-header .logo { font-size: 56px; margin-bottom: 8px; }
+  .home-header h1 {
+    font-size: 2.8rem; font-weight: 900;
+    background: linear-gradient(135deg, #e94560, #f5a623);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+  }
+  .home-header p { color: var(--text-muted); margin-top: 8px; font-size: 1rem; }
+
+  .mode-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 30px 0; }
+
+  .mode-card {
+    background: var(--surface);
+    border: 2px solid transparent;
+    border-radius: var(--radius);
+    padding: 24px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .mode-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(233,69,96,0.1), transparent);
+    opacity: 0; transition: opacity 0.25s;
+  }
+  .mode-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 12px 32px rgba(233,69,96,0.2); }
+  .mode-card:hover::before { opacity: 1; }
+  .mode-card .icon { font-size: 2.4rem; margin-bottom: 10px; }
+  .mode-card h3 { font-size: 1.1rem; font-weight: 700; }
+  .mode-card p { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+  /* SCORE BOARD on home */
+  .scoreboard {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 10px;
+  }
+  .scoreboard h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; color: var(--gold); }
+  .score-rows { display: flex; flex-direction: column; gap: 10px; }
+  .score-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--surface2); border-radius: 10px; padding: 12px 16px;
+  }
+  .score-row .label { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+  .score-row .icon-sm { font-size: 1.4rem; }
+  .score-row .best { color: var(--gold); font-weight: 900; font-size: 1.1rem; }
+  .score-row .plays { color: var(--text-muted); font-size: 0.8rem; }
+
+  /* GAME SCREEN */
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 0; margin-bottom: 16px;
+  }
+  .game-header .back-btn {
+    background: var(--surface); border: none; color: var(--text);
+    padding: 8px 16px; border-radius: 8px; cursor: pointer;
+    font-family: 'Heebo', sans-serif; font-size: 0.9rem;
+    display: flex; align-items: center; gap: 6px; transition: background 0.2s;
+  }
+  .game-header .back-btn:hover { background: var(--accent2); }
+  .game-header .mode-badge {
+    background: var(--accent); color: white;
+    padding: 6px 16px; border-radius: 20px; font-weight: 700; font-size: 0.9rem;
+  }
+  .game-header .score-live {
+    font-size: 1rem; font-weight: 700; color: var(--gold);
+  }
+
+  .progress-bar-wrap { height: 6px; background: var(--surface); border-radius: 3px; margin-bottom: 20px; }
+  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); border-radius: 3px; transition: width 0.4s ease; }
+
+  .q-card {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 28px; margin-bottom: 16px; box-shadow: var(--shadow);
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .q-label { font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+  .q-text { font-size: 1.5rem; font-weight: 700; margin-bottom: 20px; line-height: 1.4; }
+  .q-counter { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px; }
+
+  .input-row { display: flex; gap: 10px; margin-bottom: 16px; }
+  .input-row input {
+    flex: 1; padding: 12px 16px; border-radius: 10px;
+    background: var(--surface2); border: 2px solid rgba(255,255,255,0.08);
+    color: var(--text); font-family: 'Heebo', sans-serif; font-size: 1rem;
+    outline: none; transition: border-color 0.2s;
+    direction: rtl;
+  }
+  .input-row input:focus { border-color: var(--accent); }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .choice-btn {
+    width: 100%; padding: 14px 18px; border-radius: 10px;
+    background: var(--surface2); border: 2px solid rgba(255,255,255,0.06);
+    color: var(--text); font-family: 'Heebo', sans-serif; font-size: 1rem;
+    cursor: pointer; text-align: right; transition: all 0.2s;
+  }
+  .choice-btn:hover { border-color: var(--accent); background: rgba(233,69,96,0.1); }
+  .choice-btn.selected { border-color: #f5a623; background: rgba(245,166,35,0.12); }
+  .choice-btn.correct { border-color: var(--green); background: rgba(0,200,150,0.15); }
+  .choice-btn.wrong { border-color: var(--red); background: rgba(255,71,87,0.15); }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 12px 22px; border-radius: 10px; border: none;
+    font-family: 'Heebo', sans-serif; font-size: 0.95rem; font-weight: 700;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--accent); color: white; flex: 1; }
+  .btn-primary:hover { background: #c73652; }
+  .btn-secondary { background: var(--surface2); color: var(--text); }
+  .btn-secondary:hover { background: var(--accent2); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .feedback {
+    padding: 12px 16px; border-radius: 10px; margin-top: 14px;
+    font-weight: 600; font-size: 1rem; display: none;
+  }
+  .feedback.correct { background: rgba(0,200,150,0.15); color: var(--green); border: 1px solid var(--green); display: block; }
+  .feedback.wrong   { background: rgba(255,71,87,0.15);  color: var(--red);   border: 1px solid var(--red);   display: block; }
+
+  /* MISTAKES PANEL */
+  .mistakes-panel {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 20px; margin-top: 16px;
+    border: 1px solid rgba(255,71,87,0.2);
+  }
+  .mistakes-panel h3 { color: var(--red); font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .mistake-item {
+    background: var(--surface2); border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 8px; font-size: 0.9rem;
+  }
+  .mistake-item .m-q { color: var(--text-muted); font-size: 0.8rem; margin-bottom: 3px; }
+  .mistake-item .m-yours { color: var(--red); }
+  .mistake-item .m-correct { color: var(--green); }
+
+  /* END SCREEN */
+  .end-screen { text-align: center; padding: 40px 20px; }
+  .end-screen .result-icon { font-size: 5rem; margin-bottom: 16px; }
+  .end-screen h2 { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+  .end-screen .final-score {
+    font-size: 4rem; font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin: 16px 0;
+  }
+  .end-screen .sub { color: var(--text-muted); margin-bottom: 30px; }
+  .end-screen .actions { justify-content: center; }
+
+  .stat-row { display: flex; gap: 16px; justify-content: center; margin: 20px 0; flex-wrap: wrap; }
+  .stat-box {
+    background: var(--surface); border-radius: 12px; padding: 16px 24px; min-width: 100px;
+  }
+  .stat-box .val { font-size: 2rem; font-weight: 900; }
+  .stat-box .lbl { font-size: 0.75rem; color: var(--text-muted); }
+  .stat-box.green .val { color: var(--green); }
+  .stat-box.red   .val { color: var(--red); }
+  .stat-box.gold  .val { color: var(--gold); }
+
+  .empty { color: var(--text-muted); font-size: 0.9rem; text-align: center; padding: 10px; }
+
+  @media (max-width: 480px) {
+    .mode-grid { grid-template-columns: 1fr; }
+    .home-header h1 { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HOME -->
+  <div id="screen-home" class="screen active">
+    <div class="home-header">
+      <div class="logo">📚</div>
+      <h1>משחק מילים</h1>
+      <p>בחר קטגוריה כדי להתחיל</p>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card" onclick="App.startGame('opposites')">
+        <div class="icon">🔄</div>
+        <h3>הפכים</h3>
+        <p>מצא את ההפך</p>
+      </div>
+      <div class="mode-card" onclick="App.startGame('synonyms')">
+        <div class="icon">💬</div>
+        <h3>נרדפות</h3>
+        <p>מילה בעלת משמעות דומה</p>
+      </div>
+      <div class="mode-card" onclick="App.startGame('meanings')">
+        <div class="icon">🔍</div>
+        <h3>פירושים</h3>
+        <p>התאם פירוש למשפט</p>
+      </div>
+    </div>
+
+    <div class="scoreboard">
+      <h2>🏆 שיאים אישיים</h2>
+      <div class="score-rows" id="home-scores"></div>
+    </div>
+  </div>
+
+  <!-- GAME -->
+  <div id="screen-game" class="screen">
+    <div class="game-header">
+      <button class="back-btn" id="g-back-btn" onclick="App.goHome()">← חזרה</button>
+      <span class="mode-badge" id="g-mode-label"></span>
+      <span class="score-live" id="g-score-live">ניקוד: 0</span>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="g-progress"></div>
+    </div>
+
+    <div class="q-card">
+      <div class="q-label" id="g-label"></div>
+      <div class="q-counter" id="g-counter"></div>
+      <div class="q-text" id="g-question"></div>
+
+      <div class="input-row" id="g-input-wrap">
+        <input type="text" id="g-input" placeholder="הקלד תשובה..." autocomplete="off">
+      </div>
+
+      <div class="choices" id="g-choices"></div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="g-check-btn" onclick="App.checkAnswer()">✓ בדוק</button>
+        <button class="btn btn-secondary" onclick="App.next()">דלג ←</button>
+      </div>
+
+      <div class="feedback" id="g-feedback"></div>
+    </div>
+
+    <!-- Mistakes Panel -->
+    <div class="mistakes-panel" id="g-mistakes-panel">
+      <h3>❌ טעויות במשחק הנוכחי</h3>
+      <div id="g-mistakes-list"><div class="empty">אין טעויות עדיין 🎉</div></div>
+    </div>
+  </div>
+
+  <!-- END -->
+  <div id="screen-end" class="screen">
+    <div class="end-screen">
+      <div class="result-icon" id="e-icon"></div>
+      <h2 id="e-title"></h2>
+      <div class="final-score" id="e-score"></div>
+      <div class="sub" id="e-sub"></div>
+
+      <div class="stat-row">
+        <div class="stat-box green"><div class="val" id="e-correct"></div><div class="lbl">נכון</div></div>
+        <div class="stat-box red"><div class="val" id="e-wrong"></div><div class="lbl">שגוי</div></div>
+        <div class="stat-box gold"><div class="val" id="e-skipped"></div><div class="lbl">דילוגים</div></div>
+      </div>
+
+      <!-- Mistakes Summary -->
+      <div class="mistakes-panel" id="e-mistakes-panel" style="text-align:right; margin-top:20px;">
+        <h3>📋 סיכום טעויות</h3>
+        <div id="e-mistakes-list"></div>
+      </div>
+
+      <div class="actions" style="margin-top:24px;">
+        <button class="btn btn-primary" onclick="App.startGame(App.state().gameMode || 'opposites')">🔄 שחק שוב</button>
+        <button class="btn btn-secondary" onclick="App.goHome()">🏠 בית</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Module Scripts -->
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

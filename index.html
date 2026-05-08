@@ -351,7 +351,7 @@
 // ══════════════════════════════════════════
 const DATA = {
 
-  // ── 25 הפכים ──
+  // ── 41 הפכים ──
 opposites: [
 ["פורח","נובל"],
 ["איטי","מהיר"],
@@ -377,10 +377,26 @@ opposites: [
 ["ברכה","קללה"],
 ["נדיב","קמצן"],
 ["זהיר","פזיז"],
-["חד","קהה"]
+["חד","קהה"],
+["הֶחְטִיא","פָּגַע"],
+["צָפוּי","מַפְתִּיעַ"],
+["לְהַפְחִית","לְהוֹסִיף"],
+["רַשְׁלָן","קַפְּדָן"],
+["בּוֹסֶר","בָּשֵׁל"],
+["חָשַׂף","הִסְתִּיר"],
+["מְלָאכוּתִי","טִבְעִי"],
+["עָכוּר","צָלוּל"],
+["טָרִי","רָקוּב"],
+["רָדוּד","עָמֹק"],
+["פַּרְאִי","מְאֵלָף"],
+["עַתִּיק","מוֹדֶרְנִי"],
+["הִסְכִּים","סֵרֵב"],
+["מִתְקַדֵם","נָסוֹג"],
+["עֲצֵי פְּרִי","עֲצֵי סְרָק"],
+["שָׁנָה גְשׁוּמָה","שְׁנַת בַּצֹּרֶת"]
 ],
 
-  // ── 30 מילים נרדפות ──
+  // ── 47 מילים נרדפות ──
   synonyms: [
 { word:"ראה", accepted:["הסתכל","הביט","התבונן"] },
 { word:"מקשיב", accepted:["מאזין"] },
@@ -411,10 +427,27 @@ opposites: [
 { word:"שטיח", accepted:["מרבד"] },
 { word:"סוד", accepted:["רז"] },
 { word:"מתנה", accepted:["שי","דורון","תשורה"] },
-{ word:"חבר", accepted:["עמית","רע","ידיד"] }
+{ word:"חבר", accepted:["עמית","רע","ידיד"] },
+{ word:"נִגְרַר", accepted:["נִסְחָב"] },
+{ word:"הִקְשִׁיב", accepted:["הֶאֱזִין"] },
+{ word:"אוֹצָר", accepted:["מַטְמוֹן"] },
+{ word:"זוּג", accepted:["צֶמֶד"] },
+{ word:"הַרְגָּשָׁה", accepted:["תְּחוּשָׁה"] },
+{ word:"עָנִי", accepted:["אֶבְיוֹן"] },
+{ word:"הִתְכּוֹפֵף", accepted:["רָכֵן","גָּהַר"] },
+{ word:"הֶחְלִיק", accepted:["מָעַד"] },
+{ word:"צַעַד", accepted:["פְּסִיעָה"] },
+{ word:"שָׁמַיִם", accepted:["רָקִיעַ","מָרוֹם"] },
+{ word:"רָזֶה", accepted:["בָּחוּשׁ","צָנוּם"] },
+{ word:"חֹשֶׁךְ", accepted:["עֲלָטָה","אֲפֵלָה"] },
+{ word:"נוֹתָר", accepted:["נִשְׁאֵר"] },
+{ word:"גַּלְמוּד", accepted:["בּוֹדֵד"] },
+{ word:"שְׁגָגָה", accepted:["טָעוּת"] },
+{ word:"לָנוּם", accepted:["לִישׁוֹן"] },
+{ word:"נֶחְפַּז", accepted:["מִהֵר"] }
 ],
 
-  // ── 30 פירושים ──
+  // ── 34 פירושים ──
  meanings: [
 
 { word:"מטריה", meaning:"מכשיר המורכב ממוט או ידית ויריעת בד או פלסטיק להגנה מפני הגשם", sentence:"קניתי מטריה גדולה ורחבה כדי שתגן עלי מפני הגשם בעונת החורף" },
@@ -475,10 +508,31 @@ opposites: [
 
 { word:"חכמה", meaning:"יכולת שכלית מפותחת וידע", sentence:"אחותי ילדה חכמה מאוד" },
 
-{ word:"ארוחה", meaning:"זמן המוקדש לאכילה", sentence:"אבא מכין לנו ארוחה טעימה" }
+{ word:"ארוחה", meaning:"זמן המוקדש לאכילה", sentence:"אבא מכין לנו ארוחה טעימה" },
+
+{ word:"הַלְוַאי", meaning:"מילת משאלה, אני רוצה שכך יהיה", sentence:"הלוואי שאזכה בתחרות הריצה במקום הראשון" },
+
+{ word:"סְעָרָה", meaning:"מזג אוויר קשה עם רוח חזקה ובדרך כלל עם גשמים חזקים", sentence:"מחר צפויה להגיע לאזור שלנו סערה גדולה" },
+
+{ word:"שְׂמֹאלָה", meaning:"לכיוון שמאל", sentence:"הנהג פנה שמאלה כדי להגיע לביתו" },
+
+{ word:"אֲבַטִיחַ", meaning:"פרי עגול וגדול מאוד בעל קליפה ירוקה עבה, שהחלק הפנימי שלו אדום, טעמו מתוק ועסיסי והוא עשיר במים", sentence:"אני אוהב מאוד לאכול בקיץ אבטיח" }
 
 ]
 };
+
+// ══════════════════════════════════════════
+//  Helpers
+// ══════════════════════════════════════════
+/**
+ * Normalize Hebrew text by removing diacritical marks (nikudot)
+ * @param {string} text - Hebrew text to normalize
+ * @returns {string} - Normalized text without nikudot
+ */
+function normalizeHebrewText(text) {
+  // Remove Hebrew diacritical marks (U+0591 to U+05C7)
+  return text.replace(/[\u0591-\u05C7]/g, '');
+}
 
 // ══════════════════════════════════════════
 //  DB — localStorage
@@ -695,19 +749,19 @@ const App = (() => {
     let correctAnswer = '';
 
     if (mode === 'opposites') {
-      yourAnswer = el('g-input').value.trim();
+      yourAnswer = normalizeHebrewText(el('g-input').value.trim());
       correctAnswer = q[1];
-      isCorrect = yourAnswer === correctAnswer;
+      isCorrect = yourAnswer === normalizeHebrewText(correctAnswer);
     }
 
     if (mode === 'synonyms') {
-      yourAnswer = el('g-input').value.trim();
+      yourAnswer = normalizeHebrewText(el('g-input').value.trim());
       correctAnswer = q.accepted.join(' / ');
-      isCorrect = q.accepted.includes(yourAnswer);
+      isCorrect = q.accepted.some(answer => normalizeHebrewText(answer) === yourAnswer);
     }
 if (mode === 'meanings') {
 
-  yourAnswer = el('g-input').value.trim();
+  yourAnswer = normalizeHebrewText(el('g-input').value.trim());
   const selectedSentence = state.selectedChoice;
 
   if (!selectedSentence) {
@@ -715,7 +769,7 @@ if (mode === 'meanings') {
     return;
   }
 
-  if (!yourAnswer) {
+  if (!el('g-input').value.trim()) {
     showFeedback('הקלד מילה!', false, true);
     return;
   }
@@ -723,8 +777,8 @@ if (mode === 'meanings') {
   const correctSentence = q.sentence.replace(q.word, '_____');
   correctAnswer = q.word;
 
-  const sentenceCorrect = selectedSentence === correctSentence;
-  const wordCorrect = yourAnswer === q.word;
+  const sentenceCorrect = normalizeHebrewText(selectedSentence) === normalizeHebrewText(correctSentence);
+  const wordCorrect = yourAnswer === normalizeHebrewText(q.word);
 
   isCorrect = sentenceCorrect && wordCorrect;
 

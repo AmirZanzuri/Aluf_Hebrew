@@ -115,6 +115,16 @@ export function debounce(func, wait) {
 }
 
 /**
+ * Normalize Hebrew text by removing diacritical marks (nikudot)
+ * @param {string} text - Hebrew text to normalize
+ * @returns {string} - Normalized text without nikudot
+ */
+export function normalizeHebrewText(text) {
+  // Remove Hebrew diacritical marks (U+0591 to U+05C7)
+  return text.replace(/[\u0591-\u05C7]/g, '');
+}
+
+/**
  * Format percentage
  * @param {number} correct - Correct answers
  * @param {number} total - Total questions

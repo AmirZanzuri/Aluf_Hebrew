@@ -5,6 +5,7 @@
 
 import { GameMode } from './GameMode.js';
 import { meanings } from '../data/meanings.js';
+import { normalizeHebrewText } from '../utils/helpers.js';
 
 export class MeaningMode extends GameMode {
   initialize(questions) {
@@ -19,11 +20,12 @@ export class MeaningMode extends GameMode {
   validateAnswer(userAnswer, question, selectedSentence) {
     if (!selectedSentence) return false;
 
-    const userTrim = userAnswer.trim();
+    const userTrim = normalizeHebrewText(userAnswer.trim());
     const correctSentence = question.sentence.replace(question.word, '_____');
     
-    const sentenceCorrect = selectedSentence === correctSentence;
-    const wordCorrect = userTrim === question.word;
+    // Normalize both sentence and word for comparison
+    const sentenceCorrect = normalizeHebrewText(selectedSentence) === normalizeHebrewText(correctSentence);
+    const wordCorrect = userTrim === normalizeHebrewText(question.word);
 
     return sentenceCorrect && wordCorrect;
   }

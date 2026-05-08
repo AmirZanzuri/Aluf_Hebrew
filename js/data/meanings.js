@@ -1,5 +1,5 @@
 /**
- * Meanings Dataset - 30 words with definitions and sentences
+ * Meanings Dataset - 34 words with definitions and sentences
  */
 export const meanings = [
   {
@@ -151,5 +151,25 @@ export const meanings = [
     word: "ארוחה",
     meaning: "זמן המוקדש לאכילה",
     sentence: "אבא מכין לנו ארוחה טעימה"
+  },
+  {
+    word: "הַלְוַאי",
+    meaning: "מילת משאלה, אני רוצה שכך יהיה",
+    sentence: "הלוואי שאזכה בתחרות הריצה במקום הראשון"
+  },
+  {
+    word: "סְעָרָה",
+    meaning: "מזג אוויר קשה עם רוח חזקה ובדרך כלל עם גשמים חזקים",
+    sentence: "מחר צפויה להגיע לאזור שלנו סערה גדולה"
+  },
+  {
+    word: "שְׂמֹאלָה",
+    meaning: "לכיוון שמאל",
+    sentence: "הנהג פנה שמאלה כדי להגיע לביתו"
+  },
+  {
+    word: "אֲבַטִיחַ",
+    meaning: "פרי עגול וגדול מאוד בעל קליפה ירוקה עבה, שהחלק הפנימי שלו אדום, טעמו מתוק ועסיסי והוא עשיר במים",
+    sentence: "אני אוהב מאוד לאכול בקיץ אבטיח"
   }
 ];

@@ -1,5 +1,5 @@
 /**
- * Synonyms Dataset - 30 words with accepted synonyms
+ * Synonyms Dataset - 47 words with accepted synonyms
  */
 export const synonyms = [
   { word: "ראה", accepted: ["הסתכל", "הביט", "התבונן"] },
@@ -31,5 +31,22 @@ export const synonyms = [
   { word: "שטיח", accepted: ["מרבד"] },
   { word: "סוד", accepted: ["רז"] },
   { word: "מתנה", accepted: ["שי", "דורון", "תשורה"] },
-  { word: "חבר", accepted: ["עמית", "רע", "ידיד"] }
+  { word: "חבר", accepted: ["עמית", "רע", "ידיד"] },
+  { word: "נִגְרַר", accepted: ["נִסְחָב"] },
+  { word: "הִקְשִׁיב", accepted: ["הֶאֱזִין"] },
+  { word: "אוֹצָר", accepted: ["מַטְמוֹן"] },
+  { word: "זוּג", accepted: ["צֶמֶד"] },
+  { word: "הַרְגָּשָׁה", accepted: ["תְּחוּשָׁה"] },
+  { word: "עָנִי", accepted: ["אֶבְיוֹן"] },
+  { word: "הִתְכּוֹפֵף", accepted: ["רָכֵן", "גָּהַר"] },
+  { word: "הֶחְלִיק", accepted: ["מָעַד"] },
+  { word: "צַעַד", accepted: ["פְּסִיעָה"] },
+  { word: "שָׁמַיִם", accepted: ["רָקִיעַ", "מָרוֹם"] },
+  { word: "רָזֶה", accepted: ["בָּחוּשׁ", "צָנוּם"] },
+  { word: "חֹשֶׁךְ", accepted: ["עֲלָטָה", "אֲפֵלָה"] },
+  { word: "נוֹתָר", accepted: ["נִשְׁאֵר"] },
+  { word: "גַּלְמוּד", accepted: ["בּוֹדֵד"] },
+  { word: "שְׁגָגָה", accepted: ["טָעוּת"] },
+  { word: "לָנוּם", accepted: ["לִישׁוֹן"] },
+  { word: "נֶחְפַּז", accepted: ["מִהֵר"] }
 ];

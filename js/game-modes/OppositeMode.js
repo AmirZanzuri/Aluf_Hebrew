@@ -4,6 +4,7 @@
  */
 
 import { GameMode } from './GameMode.js';
+import { normalizeHebrewText } from '../utils/helpers.js';
 
 export class OppositeMode extends GameMode {
   initialize(questions) {
@@ -17,7 +18,8 @@ export class OppositeMode extends GameMode {
 
   validateAnswer(userAnswer, question) {
     const correctAnswer = question[1];
-    return userAnswer.trim() === correctAnswer;
+    // Normalize both to handle Hebrew diacritical marks
+    return normalizeHebrewText(userAnswer.trim()) === normalizeHebrewText(correctAnswer);
   }
 
   getCorrectAnswer(question) {

@@ -4,6 +4,7 @@
  */
 
 import { GameMode } from './GameMode.js';
+import { normalizeHebrewText } from '../utils/helpers.js';
 
 export class SynonymMode extends GameMode {
   initialize(questions) {
@@ -16,8 +17,11 @@ export class SynonymMode extends GameMode {
   }
 
   validateAnswer(userAnswer, question) {
-    const userTrim = userAnswer.trim();
-    return question.accepted.includes(userTrim);
+    const userTrim = normalizeHebrewText(userAnswer.trim());
+    // Normalize all accepted answers for comparison
+    return question.accepted.some(answer => 
+      normalizeHebrewText(answer) === userTrim
+    );
   }
 
   getCorrectAnswer(question) {
